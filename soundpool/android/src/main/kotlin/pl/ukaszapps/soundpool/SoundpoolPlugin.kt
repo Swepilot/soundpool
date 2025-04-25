@@ -30,6 +30,16 @@ class SoundpoolPlugin : MethodCallHandler, FlutterPlugin {
 
     private val wrappers: MutableList<SoundpoolWrapper> = mutableListOf()
 
+    private fun onRegister(context: Context,  messenger: BinaryMessenger) {
+        application = context.applicationContext
+        val channel = MethodChannel(messenger, CHANNEL_NAME)
+
+        channel.setMethodCallHandler(this)
+
+        // clearing temporary files from previous session
+        with(application.cacheDir) { this?.list { _, name -> name.matches("sound(.*)pool".toRegex()) }?.forEach { File(this, it).delete() } }
+    }
+    
     override fun onMethodCall(call: MethodCall, result: Result) {
         when (call.method) {
             "initSoundpool" -> {
